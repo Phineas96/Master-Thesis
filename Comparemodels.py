@@ -134,10 +134,11 @@ for model in modelvec:
     i+=1
     
     
+    
 i = 0
 for hist in losshist:
     # neglect first entry of vector, bc is type history and stuff
-    np.save(basedir + 'ML_models/3Parameter/Output/losshist_' + str(nodevec[i]) + 'nodes_' + str(nLayers) + 'layers.npy', np.array(hist[1:]))
+    np.save(basedir + 'ML_models/3Parameter/Output/losshist_'  + str(nepochs) + 'epochs_' + str(nodevec[i]) + 'nodes_' + str(nLayers) + 'layers.npy', np.array(hist[1:]))
     i+=1
 
 
