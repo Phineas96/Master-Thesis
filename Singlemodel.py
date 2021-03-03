@@ -32,15 +32,14 @@ testdir = basedir + 'ML_models/3Parameter/Testdata/'
 #define some useful constants
 
 # insert here number of nodes for different models
-# trying to set up 6 models at a time
 nNodes = 160
 
 # how many layers you use
 # 2 or 3 are possible
-nLayers = 1
+nLayers = 3
 
 # for how many epochs you want to train it
-nepochs = 50000
+nepochs = 200000
 
 
 
@@ -81,7 +80,7 @@ elif nLayers == 3:
     
 # for the case that other numbers are used
 else: 
-    raise ValueError('Only 2 or 3 layers are allowed!‚')
+    raise ValueError('Only 2 or 3 layers are allowed!')
     
     
 loss_fn = tf.keras.losses.MeanSquaredError()
@@ -101,7 +100,7 @@ losshist = training_history.history['loss']
 
 # save the model and the loss history
 model.save(basedir + 'ML_models/3Parameter/Models/' + str(nNodes) + 'nodes_' + str(nLayers) + 'layers')
-np.save(basedir + 'ML_models/3Parameter/losshist_' + str(nNodes) + 'nodes_' + str(nLayers) + 'layers.npy', np.array(losshist[1:]))
+np.save(basedir + 'ML_models/3Parameter/Output/losshist_'  + str(nepochs) + 'epochs_' + str(nNodes) + 'nodes_' + str(nLayers) + 'layers.npy', np.array(losshist[1:]))
 
 
 
@@ -114,12 +113,12 @@ x = np.arange(100, nepochs, 1)
 
 
 plt.figure(figsize = (10,5))
-plt.plot(x, losshist[100:], label = str(np.min(losshist[100:])))
+plt.plot(x, losshist[100:], label = str(np.min(losshist[100:])) + ' \n at ' + str(np.argmin(losshist[100:])) + ' epochs')
 plt.xlabel('Epoch')
 plt.xticks([100, int(0.2*nepochs), int(0.4*nepochs), int(0.6*nepochs), int(0.8*nepochs), int(nepochs)])
 plt.yscale('log')
 plt.legend(loc = 'upper right')
-plt.savefig(basedir + 'ML_models/3Parameter/' + str(nepochs) + 'epochs_' + str(nNodes) + 'nodes_' + str(nLayers) + 'layers.png', bbox_inches = 'tight')
+plt.savefig(basedir + 'ML_models/3Parameter/Output/' + str(nepochs) + 'epochs_' + str(nNodes) + 'nodes_' + str(nLayers) + 'layers.png', bbox_inches = 'tight')
 
 plt.show()
 
