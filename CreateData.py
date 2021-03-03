@@ -55,6 +55,9 @@ RE = 6378137                        # radius of Earth in m
 # number of training or test profiles to calculate
 n = 512
 
+# define if profiles are 'training' or 'test'
+mode = 'training'
+
 parameters_train = np.ndarray(shape=(n, 1,3))
 Temp_train = np.ndarray(shape=(n, 104))
 
@@ -92,8 +95,10 @@ for i in range(n):
     print(i+1, parameters, 'finished in', round((time.time()-start)/60, 3), 'minutes')
 
 
-#np.save(traindir + 'parameters_train', parameters_train)
-#np.save(traindir + 'Temp_train', Temp_train)
+if mode == 'training':
+    np.save(traindir + 'parameters_train', parameters_train)
+    np.save(traindir + 'Temp_train', Temp_train)
 
-np.save(testdir + 'parameters_test', parameters_train)
-np.save(testdir + 'Temp_test', Temp_train)
+if mode == 'test':
+    np.save(testdir + 'parameters_test', parameters_train)
+    np.save(testdir + 'Temp_test', Temp_train)
