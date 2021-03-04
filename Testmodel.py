@@ -30,9 +30,11 @@ testdir = basedir + 'ML_models/3Parameter/Testdata/'
 
 ############################################################################################
 
-# insert, which numbers of nodes and layers should be loaded to test them
-nodevec = [160]
-layervec = [3]
+# insert, which numbers of nodes and layers should be loaded to test them 
+# in 2 vectors with same length
+
+nodevec = [96, 128, 128, 160, 160]
+layervec = [2, 2, 3, 2, 3]
 
 
 # how many different sets of values you want to test
@@ -51,17 +53,19 @@ Temp_test = np.load(testdir + 'Temp_test.npy')
 modelvec = []
 labelvec = []
 
-# load all the models
-for nodes in nodevec:
-    for layers in layervec:
-        modelvec.append(tf.keras.models.load_model(basedir + 'ML_models/3Parameter/Models/' + str(nodes) + 'nodes_' + str(layers) + 'layers'))
-        
-        labelvec.append(str(nodes) + ' nodes, ' + str(layers) + ' layers')
-        
-        
-        
 # empty vector for all the RMSE values
 diffvec = []
+
+# load all the models
+for i in range(len(nodevec)):
+#for nodes in nodevec:
+#    for layers in layervec:
+    modelvec.append(tf.keras.models.load_model(basedir + 'ML_models/3Parameter/Models/' + str(nodevec[i]) + 'nodes_' + str(layervec[i]) + 'layers'))
+        
+    labelvec.append(str(nodevec[i]) + ' nodes, ' + str(layervec[i]) + ' layers')
+    
+    diffvec.append([])
+        
 
 # empty vector for the used indices of the test data
 index = []
@@ -69,6 +73,8 @@ index = []
 for i in range(n):
     # random int between 0 and len(Temp_test)
     ind = np.random.randint(0, len(Temp_test))
+    while ind in index:
+        ind = np.random.randint(0, len(Temp_test))
     index.append(ind)
 
     # vertical axis as in Kompot Code
@@ -82,15 +88,17 @@ for i in range(n):
     plt.figure(figsize = (10,5))
     plt.plot(Tref, z/1e5, label = 'Reference profile')
     
-    diff = []
-    labcount = 0
+    
+    count = 0
     for model in modelvec:
         Tmod = model.predict(parameters_test[ind])
         Tmod = 10**Tmod[0]
     
-        diff.append(np.sqrt(sum((Tmod-Tref)**2))/len(Tmod))
+        diffvec[count].append(np.sqrt(sum((Tmod-Tref)**2))/len(Tmod))
     
-        plt.plot(Tmod, z/1e5, label = labelvec[labcount])
+        plt.plot(Tmod, z/1e5, label = labelvec[count])
+        
+        count += 1
 
     
     # parameters as title in plot
@@ -100,20 +108,41 @@ for i in range(n):
     plt.ylabel('z [km]')
     plt.grid()
     plt.legend()
-    plt.title(str(tit).replace("'", "") + '\n')# + str(round(diff[-1], 2)))
+    plt.title(str(tit).replace("'", ""))# + str(round(diff[-1], 2)))
     
-    plt.savefig(basedir + 'ML_models/3Parameter/test' + str(ind) + '.png', bbox_inches = 'tight')
+    plt.savefig(basedir + 'ML_models/3Parameter/Output/Testplots/test' + str(ind) + '.png', bbox_inches = 'tight')
     plt.close()
+        
     
-    diffvec.append(diff)
 
-np.save(basedir + 'ML_models/3Parameter/' + str(n) + 'Differences.npy', diffvec)
-np.save(basedir + 'ML_models/3Parameter/Parameters.npy', labelvec)
+np.save(basedir + 'ML_models/3Parameter/Output/Testplots/' + str(n) + 'Differences.npy', diffvec)
+np.save(basedir + 'ML_models/3Parameter/Output/Testplots/' + str(n) + 'Parameters.npy', labelvec)
 
-np.save(basedir + 'ML_models/3Parameter/Indices.npy', index)
-
+np.save(basedir + 'ML_models/3Parameter/Output/Testplots/' + str(n) + 'Indices.npy', index)
 
 
+
+'''
+Plot differences
+'''
+
+# possible markers:
+# octagon, square, pentagon, plus, star, thin diamond, hexagon, filled x
+markers = ['8', 's', 'p', '+', '*', 'd', 'h', 'X']
+
+plt.figure(figsize = (13,6))
+for i in range(len(diffvec)):
+    p = plt.scatter(index, diffvec[i], label = labelvec[i], marker = markers[i], alpha = 0.5)
+    
+
+    plt.axhline(y = np.mean(diffvec[i]), color = p.get_facecolor()[0], ls = '--')
+
+
+plt.xlabel('Index of Test profile')
+plt.ylabel('RMS difference')
+plt.title('Comparison of different models')
+plt.legend()
+plt.savefig(basedir + 'ML_models/3Parameter/Output/Testplots/Differences.png', bbox_inches = 'tight')
 
 
 
