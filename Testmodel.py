@@ -27,18 +27,21 @@ import tensorflow as tf
 basedir = '/Users/MarkusRosenberger/Documents/Uni Wien/MasterAstro/Machine Learning/Earth/'
 traindir = basedir + 'ML_models/3Parameter/Trainingdata/'
 testdir = basedir + 'ML_models/3Parameter/Testdata/'
+outdir = basedir + 'ML_models/3Parameter/Output/Bestmodel/'
+
 
 ############################################################################################
 
 # insert, which numbers of nodes and layers should be loaded to test them 
-# in 2 vectors with same length
+# in 3 vectors with same length
 
-nodevec = [96, 128, 128, 160, 160]
-layervec = [2, 2, 3, 2, 3]
+nodevec = [100, 200, 250]
+layervec = [3, 3, 4]
+epochvec = [49064, 9789, 22878]
 
 
 # how many different sets of values you want to test
-n = 75
+n = 100
 
 
 ############################################################################################
@@ -58,11 +61,10 @@ diffvec = []
 
 # load all the models
 for i in range(len(nodevec)):
-#for nodes in nodevec:
-#    for layers in layervec:
-    modelvec.append(tf.keras.models.load_model(basedir + 'ML_models/3Parameter/Models/' + str(nodevec[i]) + 'nodes_' + str(layervec[i]) + 'layers'))
-        
-    labelvec.append(str(nodevec[i]) + ' nodes, ' + str(layervec[i]) + ' layers')
+    #modelvec.append(tf.keras.models.load_model(basedir + 'ML_models/3Parameter/Models/' + str(nodevec[i]) + 'nodes_' + str(layervec[i]) + 'layers'))
+    modelvec.append(tf.keras.models.load_model(outdir + str(nodevec[i]) + 'nodes_' + str(layervec[i]) + 'layers/' + str(epochvec[i]) + 'epochs'))
+    
+    labelvec.append(str(nodevec[i]) + ' nodes, ' + str(layervec[i]) + ' layers, ' + str(epochvec[i]) + ' epochs')
     
     diffvec.append([])
         
@@ -86,7 +88,6 @@ for i in range(n):
     
     # start with plot of reference profile
     plt.figure(figsize = (10,5))
-    plt.plot(Tref, z/1e5, label = 'Reference profile')
     
     
     count = 0
@@ -96,12 +97,15 @@ for i in range(n):
     
         diffvec[count].append(np.sqrt(sum((Tmod-Tref)**2))/len(Tmod))
     
-        plt.plot(Tmod, z/1e5, label = labelvec[count])
+        plt.plot(Tmod, z, label = labelvec[count])
         
         count += 1
+        
+    plt.plot(Tref, z, label = 'Reference profile', color = 'k', linewidth = 3, ls ='--')
 
     
     # parameters as title in plot
+    # order is [Mpl, fC, FxuvIn]
     tit = ["{:.3f}".format(parameters_test[ind][0][0]), "{:.3e}".format(parameters_test[ind][0][1]), "{:.3f}".format(parameters_test[ind][0][2])]
     
     plt.xlabel('log T [K]')
@@ -110,16 +114,20 @@ for i in range(n):
     plt.legend()
     plt.title(str(tit).replace("'", ""))# + str(round(diff[-1], 2)))
     
-    plt.savefig(basedir + 'ML_models/3Parameter/Output/Testplots/test' + str(ind) + '.png', bbox_inches = 'tight')
+    #plt.savefig(basedir + 'ML_models/3Parameter/Output/Testplots/test' + str(ind) + '.png', bbox_inches = 'tight')
+    plt.savefig(outdir + 'Comparison/Version03/test' + str(ind) + '.png', bbox_inches = 'tight')
     plt.close()
         
     
 
-np.save(basedir + 'ML_models/3Parameter/Output/Testplots/' + str(n) + 'Differences.npy', diffvec)
-np.save(basedir + 'ML_models/3Parameter/Output/Testplots/' + str(n) + 'Parameters.npy', labelvec)
+#np.save(basedir + 'ML_models/3Parameter/Output/Testplots/' + str(n) + 'Differences.npy', diffvec)
+#np.save(basedir + 'ML_models/3Parameter/Output/Testplots/' + str(n) + 'Parameters.npy', labelvec)
+#
+#np.save(basedir + 'ML_models/3Parameter/Output/Testplots/' + str(n) + 'Indices.npy', index)
+np.save(outdir + 'Comparison/Version03/' + str(n) + 'Differences.npy', diffvec)
+np.save(outdir + 'Comparison/Version03/' + str(n) + 'Parameters.npy', labelvec)
 
-np.save(basedir + 'ML_models/3Parameter/Output/Testplots/' + str(n) + 'Indices.npy', index)
-
+np.save(outdir + 'Comparison/Version03/' + str(n) + 'Indices.npy', index)
 
 
 '''
@@ -142,21 +150,6 @@ plt.xlabel('Index of Test profile')
 plt.ylabel('RMS difference')
 plt.title('Comparison of different models')
 plt.legend()
-plt.savefig(basedir + 'ML_models/3Parameter/Output/Testplots/Differences.png', bbox_inches = 'tight')
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+#plt.savefig(basedir + 'ML_models/3Parameter/Output/Testplots/Differences.png', bbox_inches = 'tight')
+plt.savefig(outdir + 'Comparison/Version03/Differences.png', bbox_inches = 'tight')
 
