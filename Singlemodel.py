@@ -32,15 +32,16 @@ testdir = basedir + 'ML_models/3Parameter/Testdata/'
 #define some useful constants
 
 # insert here number of nodes for different models
-nNodes = 160
+nNodes = 100
 
 # how many layers you use
-# 2 or 3 are possible
+# 2, 3 or 4 are possible
 nLayers = 3
 
 # for how many epochs you want to train it
-nepochs = 200000
+nepochs = 50000
 
+checkpoint_filepath = basedir + 'ML_models/3Parameter/Output/Bestmodel/Checkpoints/' + str(nNodes) + 'nodes_' + str(nLayers) + 'layers/{epoch:02d}-{loss:.3e}'
 
 
 parameters_train = np.load(traindir + 'parameters_train.npy')
@@ -78,9 +79,19 @@ elif nLayers == 3:
         tf.keras.layers.Dense(nOutput)
         ])
     
+elif nLayers == 4:
+    model = tf.keras.models.Sequential([
+        tf.keras.layers.Flatten(input_shape=(nInput)),        
+        tf.keras.layers.Dense(nNodes, activation='relu'),
+        tf.keras.layers.Dense(nNodes, activation='relu'),
+        tf.keras.layers.Dense(nNodes, activation='relu'),
+        tf.keras.layers.Dense(nNodes, activation='relu'),
+        tf.keras.layers.Dense(nOutput)
+        ])
+    
 # for the case that other numbers are used
 else: 
-    raise ValueError('Only 2 or 3 layers are allowed!')
+    raise ValueError('Only 2, 3 or 4 layers are allowed!')
     
     
 loss_fn = tf.keras.losses.MeanSquaredError()
@@ -89,7 +100,15 @@ opt = tf.keras.optimizers.Adam()
 model.compile(optimizer=opt,loss=loss_fn, metrics=['MeanSquaredError'])
 
 
-training_history = model.fit(inputTrain, outputTrain, epochs=nepochs)
+model_checkpoint_callback = tf.keras.callbacks.ModelCheckpoint(
+    filepath=checkpoint_filepath,
+    save_weights_only=False,
+    monitor='loss',
+    mode='min',
+    save_best_only=True)
+
+
+training_history = model.fit(inputTrain, outputTrain, epochs=nepochs, callbacks=[model_checkpoint_callback])
 losshist = training_history.history['loss']
 
 
